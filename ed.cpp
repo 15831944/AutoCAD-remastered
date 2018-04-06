@@ -32,6 +32,7 @@ Quads QT[100];
 Quads Q1[100];
 Quads Q2[100]; 
 Quads Q3[100];
+Quads Q3D[100];
 /**
  * addQuads method is for making a new Quad when called upon.
  */
@@ -58,6 +59,19 @@ void drawQuads(){
 		glVertex3f(Q[i].x4,Q[i].y4,Q[i].z4);
 		glEnd();
 	}
+}
+void drawQuads3d(){
+	int i;
+	for (i=1;i<Q3D[0].total+1;i++){
+		glBegin(GL_QUADS);
+		glColor3f(Q3D[i].r,Q3D[i].g,Q3D[i].b);
+		glVertex3f(Q3D[i].x1,Q3D[i].y1,Q3D[i].z1);
+		glVertex3f(Q3D[i].x2,Q3D[i].y2,Q3D[i].z2);
+		glVertex3f(Q3D[i].x3,Q3D[i].y3,Q3D[i].z3);
+		glVertex3f(Q3D[i].x4,Q3D[i].y4,Q3D[i].z4);
+		glEnd();
+	}
+	
 }
 /**
  * front2Dview method is for displaying User made front view in Display menu.
@@ -965,19 +979,107 @@ void points(){
 /**
  * removeduplicate method takes Array of Quad and is for making set of all 3d points exteracted in points method.
  */
-void removeduplicate(Quads a){
 
+Coordinate C1[400];
+void Disable(Coordinate x){
+	int size = C[0].t;
+	C1[0] = C[0];
+	C1[0].t = 0;
+	for(int j=1;j<size;j++){
+		Coordinate y = C[j];
+		if(y.x1==x.x1 && y.y1==x.y1 && y.z1==x.z1){
+			y.t = -1;
+		}
+	}
 }
-/**
- * drawgraph method takes Array of coordinates and is for making graph of a 3d object.
- */
-void drawgraph(Coordinate x){}
+void removeduplicate(){
+
+	int size = C[0].t;
+	int idx =1;
+	
+	for(int i =0;i<size;i++){
+		if(C[i].t==0){
+			C1[idx] = C[i];
+			Disable(C[i]);
+			idx++;
+			C1[0].t+=1;
+		}
+	}
+		
+}
+
+
+
+
 /**
  * threedtwod method is for making set of all 3d object from three 2 dimensional views.
  */
-void threedtwod(){
-	
+
+bool isPresent(Coordinate x , int idx){
+	Quads q = Q1[idx];
+	if(q.x1==x.x1 && q.y1==x.y1 && q.z1==x.z1){
+		return true;
+  	}
+	if(q.x2==x.x1 && q.y2==x.y1 && q.z2==x.z1){
+		return true;
+  	}
+	if(q.x3==x.x1 && q.y3==x.y1 && q.z3==x.z1){
+		return true;
+  	}
+	if(q.x4==x.x1 && q.y4==x.y1 && q.z4==x.z1){
+		return true;
+  	}
+	return false;	
 }
+
+void threedtwod(){
+	points();
+	removeduplicate();
+	//2d to 3d m hamare paas 3d points aa gye h saare C1
+	//Q1--frontview
+	int size = C1[0].t;
+	bool b1 = true;
+	bool b2 = true;
+	bool b3 = true;
+	bool b4 = true;
+	for(int i0 = 1;i0<size-2;i0++){
+		for(int i1 = i0+1;i1<size-1;i1++){
+			for(int i2 = i1+1;i2<size;i2++){
+				for(int i3 = i2+1;i3<size+1;i3++){
+					Coordinate c1 = C1[i0];
+					Coordinate c2 = C1[i1];
+					Coordinate c3 = C1[i2];
+					Coordinate c4 = C1[i3];
+					
+					for(int i4 = 1;i4<Q1[0].total+1;i4++){
+						b1 = isPresent(c1,i4);
+						b2 = isPresent(c2,i4);
+						b3 = isPresent(c3,i4);
+						b4 = isPresent(c4,i4);
+						if(b1 && b2 && b3 && b4){
+							Q3D[0].total++;
+							cn=Q3D[0].total;
+							Q3D[cn].x1=c1.x1;
+							Q3D[cn].y1=c1.y1;
+							Q3D[cn].z1=c1.z1;
+							Q3D[cn].x2=c2.x1;
+							Q3D[cn].y2=c2.y1;
+							Q3D[cn].z2=c2.z1;
+							Q3D[cn].x3=c3.x1;
+							Q3D[cn].y3=c3.y1;
+							Q3D[cn].z3=c3.z1;
+							Q3D[cn].x4=c4.x1;
+							Q3D[cn].y4=c4.y1;
+							Q3D[cn].z4=c4.z1;
+							
+						}				
+					}
+				}	
+			}
+		}
+	}
+}
+
 /**
  * theCube method is for making small cube in display which work as pointer.
  */
@@ -1017,6 +1119,7 @@ void display(){
   
   drawGrid();
   drawQuads();
+  drawQuads3d();
   drawfront2D();
   drawside2D();
   drawtop2D();
@@ -1055,6 +1158,7 @@ void keyboard(unsigned char key,int x, int y){
 	if (key=='f') { frontview();}
 	if (key=='x') { sideview();}
 	if (key=='t') { topview();}
+	if (key=='k') { threedtwod();}
     	
 	glutPostRedisplay();
 }
